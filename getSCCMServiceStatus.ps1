@@ -32,12 +32,14 @@ foreach($server in $serverList) {
 	$IISADMINStatus = ""
 	$SMS_EXECUTIVEStatus = ""
 	$W3SvcStatus = ""
+	$ReportServerStatus = ""
 	
 	Try{
 		$OS = (get-wmiobject -computername $server -class Win32_OperatingSystem).caption
 		$IISADMINStatus = (Get-Service -computername $server | Where-Object {$_.name -eq "IISADMIN"}).status
 		$SMS_EXECUTIVEStatus = (Get-Service -computername $server | Where-Object {$_.name -eq "SMS_EXECUTIVE"}).status
 		$W3SvcStatus = (Get-Service -computername $server | Where-Object {$_.name -eq "W3SVC"}).status
+		$ReportServerStatus = (Get-Service -computername $server | Where-Object {$_.name -eq "ReportServer"}).status
 	}
 	
 	Catch{
@@ -51,13 +53,16 @@ foreach($server in $serverList) {
 	}
 	
 	if(!$IISADMINStatus){
-	$IISADMINStatus = "Not running"
+	$IISADMINStatus = "Not installed"
 	}
 	if(!$SMS_EXECUTIVEStatus){
-	$SMS_EXECUTIVEStatus = "Not running"
+	$SMS_EXECUTIVEStatus = "Not installed"
 	}
 	if(!$W3SvcStatus){
-	$W3SvcStatus = "Not running"
+	$W3SvcStatus = "Not installed"
+	}
+	if(!$ReportServerStatus){
+	$ReportServerStatus = "Not installed"
 	}
 	
 	$serverInfo = New-Object -TypeName PSObject -Property @{
@@ -66,9 +71,10 @@ foreach($server in $serverList) {
 		IISAdminStatus = $IISADMINStatus
 		SMS_EXECUTIVEStatus = $SMS_EXECUTIVEStatus
 		W3SvcStatus = $W3SvcStatus
+		ReportServerStatus = $ReportServerStatus
 		Details = $ErrorMessage
 	}
 	$data += $serverInfo
 	
-	$data | Select Server,OS,IISADMINStatus,SMS_EXECUTIVEStatus,W3SvcStatus,Details | Export-Csv $fileName -noTypeInformation -append	
+	$data | Select Server,OS,IISADMINStatus,SMS_EXECUTIVEStatus,W3SvcStatus,ReportServerStatus,Details | Export-Csv $fileName -noTypeInformation -append	
 }
